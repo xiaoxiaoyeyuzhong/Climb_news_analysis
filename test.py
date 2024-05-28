@@ -25,3 +25,35 @@
 #         else:
 #             print("请求失败")
 #             print(response.status_code)
+
+
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QListWidget
+
+
+class MainWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle('新闻标题展示')
+        self.setGeometry(100, 100, 800, 600)
+
+        layout = QVBoxLayout()
+        self.list_widget = QListWidget()
+        self.list_widget.addItem("测试新闻标题1")
+        self.list_widget.addItem("测试新闻标题2")
+        layout.addWidget(self.list_widget)
+
+        self.list_widget.itemClicked.connect(self.show_details)
+
+        self.setLayout(layout)
+
+    def show_details(self, item):
+        print(f"点击了: {item.text()}")
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())

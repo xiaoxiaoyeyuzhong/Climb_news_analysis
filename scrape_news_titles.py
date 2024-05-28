@@ -125,11 +125,10 @@
 #         print(url)
 
 
-# 对于动态网页，直接用request和BeautifulSoup是行不通的
-# import requests
-# import time
-#
-#
+# 对于动态网页，直接用request和BeautifulSoup是不好用的
+import requests
+import time
+
 # def scrape_full_page(url):
 #     # 等待3秒
 #     time.sleep(3)
