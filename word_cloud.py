@@ -1,33 +1,37 @@
 import sys
-
 import jieba
 import matplotlib.pyplot as plt
 import requests
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QListWidget, QPushButton
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QListWidget
 from bs4 import BeautifulSoup
 from wordcloud import WordCloud
 
 
-# 爬取新闻标题
+# 爬取新闻标题和链接
 def scrape_news_titles(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
-    # 新闻标题在 <a> 标签下的 <h4> 标签中,跳过a标签下没有h4标签的情况
-    titles = soup.find_all('a')
     news_titles = []
-    for title in titles:
-        h4_tag = title.find('h4')
-        if h4_tag:
-            news_titles.append(h4_tag.get_text())
-    return news_titles
+    news_urls = []
 
+    # 找到所有包含新闻的div标签
+    feed_items = soup.find_all('div', class_='feed-item feed-item-a')
+    for item in feed_items:
+        # 在每个feed-item内找a标签
+        a_tag = item.find('a')
+        if a_tag:
+            # 在a标签内找h4标签
+            h4_tag = a_tag.find('h4')
+            if h4_tag:
+                news_titles.append(h4_tag.get_text())
+                news_urls.append('https://sports.huanqiu.com' + a_tag['href'])  # 拼接完整的URL
+    return news_titles, news_urls
 
 
 # 爬取新闻内容并生成词云
 def generate_wordcloud(news_url):
     response = requests.get(news_url)
     soup = BeautifulSoup(response.content, 'html.parser')
-    # 提取所有 <p> 标签中的文字内容
     paragraphs = soup.find_all('p')
     text = ' '.join([p.get_text() for p in paragraphs])
 
@@ -56,12 +60,17 @@ class MainWindow(QWidget):
         super().__init__()
 
         self.setWindowTitle('新闻标题和词云展示')
-        self.setGeometry(100, 100, 600, 400)
+        self.setGeometry(100, 100, 800, 600)
 
         layout = QVBoxLayout()
 
         # 爬取新闻标题
-        self.news_titles = scrape_news_titles('https://example.com/news')
+        self.news_titles, self.news_urls = scrape_news_titles('https://sports.huanqiu.com')
+
+        # 调试信息，输出爬取到的新闻标题
+        print("新闻标题:")
+        for title in self.news_titles:
+            print(title)
 
         # 新闻标题列表
         self.list_widget = QListWidget()
@@ -69,17 +78,15 @@ class MainWindow(QWidget):
             self.list_widget.addItem(title)
         layout.addWidget(self.list_widget)
 
-        # 显示新闻详情按钮
-        self.show_details_button = QPushButton('显示新闻详情')
-        self.show_details_button.clicked.connect(self.show_details)
-        layout.addWidget(self.show_details_button)
+        # 绑定列表项点击事件
+        self.list_widget.itemClicked.connect(self.show_details)
 
         self.setLayout(layout)
 
-    def show_details(self):
-        # 获取用户选择的新闻标题
+    def show_details(self, item):
+        # 获取用户选择的新闻标题索引
         selected_index = self.list_widget.currentRow()
-        selected_news_url = f'https://sports.huanqiu.com/{selected_index}'
+        selected_news_url = self.news_urls[selected_index]
 
         # 生成词云并展示给用户
         generate_wordcloud(selected_news_url)
