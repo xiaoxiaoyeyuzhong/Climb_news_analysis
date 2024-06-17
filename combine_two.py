@@ -7,7 +7,7 @@ import requests
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QListWidget, QPushButton, QStackedWidget
 from PyQt5.QtWidgets import QLabel
 from bs4 import BeautifulSoup
-from wordcloud import WordCloud
+from wordcloud_generator import WordCloud
 from selenium import webdriver
 from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.edge.options import Options as EdgeOptions
